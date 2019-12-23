@@ -38,7 +38,7 @@ void change_settings(program& io_program)
 int main() {
     affine_ciphers_ns::program aff_program;
 
-    std::cout << hello_text;
+    std::cout << hello_text << std::endl;
 
     //main loop
     while (true)

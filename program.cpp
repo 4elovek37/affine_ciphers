@@ -15,55 +15,39 @@ namespace affine_ciphers_ns {
 
     const std::wstring program::eng_dict = L"abcdefghijklmnopqrstuvwxyz";
     const std::wstring program::eng_upper_dict = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const std::vector<double> program::eng_stats =
+            { 0.08167, 0.01492, 0.02202, 0.04253, 0.012702, 0.02228, 0.02015, 0.06094,
+              0.06966, 0.00153, 0.01292, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929,
+              0.00095, 0.05987, 0.06327, 0.09356, 0.02758, 0.00978, 0.02560, 0.00150,
+              0.01994, 0.00077
+            };
     const std::vector<std::uint8_t> program::possible_a_eng = {1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25};
 
     const std::wstring program::rus_dict = L"абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
     const std::wstring program::rus_upper_dict = L"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+    const std::vector<double> program::rus_stats =
+            { 0.07998, 0.01592, 0.04533, 0.01687, 0.02977, 0.08483, 0.00013, 0.0094,
+              0.01641, 0.07367, 0.01208, 0.03486, 0.04343, 0.03203, 0.067, 0.10983,
+              0.02804, 0.04746, 0.05473, 0.06318, 0.02615, 0.00267, 0.00966, 0.00486,
+              0.0145, 0.00718, 0.00361, 0.00037, 0.01898, 0.01735, 0.00331, 0.00639, 0,02001
+            };
     const std::vector<std::uint8_t> program::possible_a_rus = {1, 2, 4, 5, 7, 8, 10, 13, 14, 16, 17, 19, 20, 23, 25, 26, 28, 29, 31, 32};
 
-    std::pair<std::string, program::key> program::encrypt(const std::string& i_str) const
-    {
-        const auto enc_key = gen_key();
 
-        const std::size_t dict_size = (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
-        auto enc_fn = [&enc_key, dict_size](std::size_t i_curr_pos)
-        {
-            return (i_curr_pos * enc_key.a + enc_key.b) % dict_size;
-        };
-
-        return { translate_msg(i_str, enc_fn), enc_key };
-    };
-
-    std::string program::decrypt(const std::string& i_str, key i_key) const
-    {
-        const std::size_t dict_size = (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
-        std::uint8_t a_inv = i_key.a % dict_size;
-        for(std::uint8_t x = 1; x < dict_size; ++x)
-        {
-            if((a_inv * x) % dict_size == 1)
-            {
-                a_inv = x;
-                break;
-            }
-        }
-
-        auto dec_fn = [&i_key, a_inv, dict_size](std::size_t i_curr_pos)
-        {
-            return (a_inv * (i_curr_pos + dict_size - i_key.b)) % dict_size;
-        };
-
-        return translate_msg(i_str, dec_fn);
-    }
-
-    std::string program::translate_msg(std::string i_str, translate_fn i_translate_fn) const
+    std::string program::translate_msg(const std::string& i_str, translate_fn i_translate_fn) const
     {
         using wstr_convert_type = std::codecvt_utf8<wchar_t>;
         std::wstring_convert<wstr_convert_type, wchar_t> cvt;
         const auto wide_str = cvt.from_bytes(i_str);
 
+        return cvt.to_bytes(translate_msg(wide_str, i_translate_fn));
+    }
+
+    std::wstring program::translate_msg(const std::wstring& i_str, translate_fn i_translate_fn) const
+    {
         std::unordered_map<wchar_t, wchar_t> translation_table;
         std::wstring res_str;
-        for(const auto ch : wide_str) {
+        for(const auto ch : i_str) {
             const auto trans_it = translation_table.find(ch);
             if (trans_it != translation_table.end()) {
                 res_str.push_back(trans_it->second);
@@ -87,7 +71,7 @@ namespace affine_ciphers_ns {
             }
         }
 
-        return cvt.to_bytes(res_str);
+        return res_str;
     }
 
     std::pair<const std::wstring&, std::size_t> program::find_ch_in_dict(wchar_t i_ch) const
