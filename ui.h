@@ -25,6 +25,10 @@ namespace affine_ciphers_ns {
             "Выберите язык шифротекстов (1 - Английский, 2 - Русский)",
             {1, 2}
     };
+    int_ansv_t settings_set_non_dict_char_rule = {
+            "Выберите тип обработки символов, не входящих в алфавит: (1 - Игнорировать, 2 - Сохранать)",
+            {1, 2}
+    };
 }
 
 #endif //AFFINE_CIPHERS_UI_H

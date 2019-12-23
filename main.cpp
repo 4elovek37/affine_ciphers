@@ -9,24 +9,11 @@
 
 using namespace affine_ciphers_ns;
 
-struct settings {
-    using text_lang_t = program::text_lang_t;
-    text_lang_t text_lang = text_lang_t::Eng;
 
-    std::string to_string() const
-    {
-        std::ostringstream str;
-        str << "Язык шифротекстов: "
-            << (text_lang == text_lang_t::Eng ? "Английский" : "Русский")
-            << std::endl;
 
-        return str.str();
-    }
-};
-
-void change_settings(settings& io_settings)
+void change_settings(program& io_program)
 {
-    std::cout << "Текущие настройки" << std::endl << io_settings.to_string();
+    std::cout << "Текущие настройки" << std::endl << io_program.get_settings().to_string();
 
     int ans = utils_ns::io_helper::get_input(settings_main_text);
 
@@ -36,16 +23,20 @@ void change_settings(settings& io_settings)
             return;
         case 1:
         {
-            io_settings.text_lang = static_cast<settings::text_lang_t>(utils_ns::io_helper::get_input(settings_set_lang));
+            program::settings new_settings;
+            new_settings.text_lang =
+                    static_cast<program::settings::text_lang_t>(utils_ns::io_helper::get_input(settings_set_lang));
+            new_settings.non_dict_rule =
+                    static_cast<program::settings::non_dict_rule_t >(utils_ns::io_helper::get_input(settings_set_non_dict_char_rule));
+
+            io_program.set_settings(new_settings);
             std::cout << "Настройки сохранены" << std::endl;
         }
     }
 }
 
 int main() {
-    settings setts;
     affine_ciphers_ns::program aff_program;
-    aff_program.set_lang(setts.text_lang);
 
     std::cout << hello_text;
 
@@ -56,8 +47,7 @@ int main() {
         switch (ans)
         {
             case 1:
-                change_settings(setts);
-                aff_program.set_lang(setts.text_lang);
+                change_settings(aff_program);
                 break;
             case 2:
             {

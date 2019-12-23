@@ -4,11 +4,11 @@
 
 #include "program.h"
 
-#include <iostream>
 #include <codecvt>
 #include <locale>
 #include <random>
 #include <unordered_map>
+#include <sstream>
 
 namespace affine_ciphers_ns {
 
@@ -25,7 +25,7 @@ namespace affine_ciphers_ns {
     {
         const auto enc_key = gen_key();
 
-        const std::size_t dict_size = (m_lang == Eng ? eng_dict.size() : rus_dict.size());
+        const std::size_t dict_size = (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
         auto enc_fn = [&enc_key, dict_size](std::size_t i_curr_pos)
         {
             return (i_curr_pos * enc_key.a + enc_key.b) % dict_size;
@@ -36,7 +36,7 @@ namespace affine_ciphers_ns {
 
     std::string program::decrypt(const std::string& i_str, key i_key) const
     {
-        const std::size_t dict_size = (m_lang == Eng ? eng_dict.size() : rus_dict.size());
+        const std::size_t dict_size = (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
         std::uint8_t a_inv = i_key.a % dict_size;
         for(std::uint8_t x = 1; x < dict_size; ++x)
         {
@@ -77,6 +77,10 @@ namespace affine_ciphers_ns {
                     const auto translated_pos = i_translate_fn(found_ch.second);
                     translated_ch = found_ch.first[translated_pos];
                 }
+                else if(m_settings.non_dict_rule == settings::non_dict_rule_t::Ignore)
+                {
+                    continue;
+                }
 
                 res_str.push_back(translated_ch);
                 translation_table[ch] = translated_ch;
@@ -88,8 +92,8 @@ namespace affine_ciphers_ns {
 
     std::pair<const std::wstring&, std::size_t> program::find_ch_in_dict(wchar_t i_ch) const
     {
-        const auto& lower_dict = m_lang == Eng ? eng_dict : rus_dict;
-        const auto& upper_dict = m_lang == Eng ? eng_upper_dict : rus_upper_dict;
+        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
+        const auto& upper_dict = m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
 
         const auto pos = lower_dict.find(i_ch);
         if (pos != std::wstring::npos)
@@ -105,15 +109,27 @@ namespace affine_ciphers_ns {
         std::random_device rd;
         std::mt19937 mt(rd());
         std::uniform_int_distribution<std::size_t> a_dist(0
-                , (m_lang == Eng ? possible_a_eng.size() : possible_a_rus.size()));
+                , (m_settings.text_lang == settings::Eng ? possible_a_eng.size() : possible_a_rus.size()));
         std::uniform_int_distribution<std::uint8_t > b_dist(1
-                , (m_lang == Eng ? eng_dict.size() + 1 : rus_dict.size() + 1));
+                , (m_settings.text_lang == settings::Eng ? eng_dict.size() + 1 : rus_dict.size() + 1));
 
         const auto a_idx = a_dist(mt);
-        o_key.a = (m_lang == Eng ? possible_a_eng[a_idx] : possible_a_rus[a_idx]);
+        o_key.a = (m_settings.text_lang == settings::Eng ? possible_a_eng[a_idx] : possible_a_rus[a_idx]);
         o_key.b = b_dist(mt);
 
         return o_key;
+    }
+
+    std::string program::settings::to_string() const
+    {
+        std::ostringstream str;
+        str << "Язык шифротекстов: "
+            << (text_lang == text_lang_t::Eng ? "Английский" : "Русский")
+            << std::endl;
+        str << "Символы, не входящие в алфавит: "
+            << (non_dict_rule == non_dict_rule_t::Keep ? "Сохранять" : "Игнорировать")
+            << std::endl;
+        return str.str();
     }
 
 }
