@@ -7,8 +7,9 @@
 #include <codecvt>
 #include <locale>
 #include <random>
-#include <unordered_map>
 #include <sstream>
+
+
 
 namespace affine_ciphers_ns {
 
@@ -47,6 +48,9 @@ namespace affine_ciphers_ns {
     {
         std::unordered_map<wchar_t, wchar_t> translation_table;
         std::wstring res_str;
+        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
+        const auto& upper_dict = m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
+
         for(const auto ch : i_str) {
             const auto trans_it = translation_table.find(ch);
             if (trans_it != translation_table.end()) {
@@ -59,7 +63,13 @@ namespace affine_ciphers_ns {
                 if (found_ch.second != std::wstring::npos)
                 {
                     const auto translated_pos = i_translate_fn(found_ch.second);
-                    translated_ch = found_ch.first[translated_pos];
+
+                    if (m_settings.upper_lower_rule == settings::upper_lower_rule_t::Only_lower)
+                        translated_ch = lower_dict[translated_pos];
+                    else if (m_settings.upper_lower_rule == settings::upper_lower_rule_t::Only_upper)
+                        translated_ch = upper_dict[translated_pos];
+                    else
+                        translated_ch = found_ch.first[translated_pos];
                 }
                 else if(m_settings.non_dict_rule == settings::non_dict_rule_t::Ignore)
                 {
@@ -86,7 +96,7 @@ namespace affine_ciphers_ns {
             return {upper_dict, upper_dict.find(i_ch)};
     }
 
-    program::key program::gen_key() const
+    key program::gen_key() const
     {
         key o_key;
 
@@ -113,7 +123,112 @@ namespace affine_ciphers_ns {
         str << "Символы, не входящие в алфавит: "
             << (non_dict_rule == non_dict_rule_t::Keep ? "Сохранять" : "Игнорировать")
             << std::endl;
+        str << "Регистр шифрования: ";
+        if (upper_lower_rule == upper_lower_rule_t::Mix)
+            str << "Смешанный";
+        else if(upper_lower_rule == upper_lower_rule_t::Only_lower)
+            str << "Нижний";
+        else
+            str << "Верхний";
+
+        str << std::endl;
         return str.str();
     }
+
+    std::string key::to_string() const
+    {
+        std::ostringstream str;
+        str << "Ключ " << std::to_string(a) + ":" + std::to_string(b) << std::endl;
+        return str.str();
+    }
+
+    std::unordered_map<wchar_t, double> program::analyze_freqs(const std::wstring& i_str) const
+    {
+        std::unordered_map<wchar_t, double> res;
+        std::unordered_map<wchar_t, int> tmp_stat;
+        std::size_t effective_cnt = 0;
+
+        for(const auto ch : i_str)
+        {
+            auto ch_pair = tmp_stat.find(ch);
+            if (ch_pair != std::end(tmp_stat))
+            {
+                effective_cnt += 1;
+                ch_pair->second++;
+            }
+            else
+            {
+                const auto found_ch = find_ch_in_dict(ch);
+                if (found_ch.second != std::wstring::npos)
+                {
+                    effective_cnt += 1;
+                    tmp_stat[ch] = 1;
+                }
+            }
+        }
+
+        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
+        const auto& upper_dict = m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
+
+        for(std::size_t i = 0; i < lower_dict.size(); ++i)
+        {
+            auto lower_it = tmp_stat.find(lower_dict[i]);
+            if (lower_it != std::end(tmp_stat))
+                res[lower_it->first] = lower_it->second;
+            auto upper_it = tmp_stat.find(upper_dict[i]);
+            if(upper_it != std::end(tmp_stat))
+            {
+                if (lower_it != std::end(tmp_stat))
+                    res[lower_it->first] += upper_it->second;
+                else
+                    res[lower_dict[i]] = upper_it->second;
+            }
+        }
+
+        for (auto& res_stat : res)
+            res_stat.second /= static_cast<double >(effective_cnt);
+
+        return res;
+    };
+
+    std::vector<program::hack_res> program::hack(const std::string& i_str) const
+    {
+        using wstr_convert_type = std::codecvt_utf8<wchar_t>;
+        std::wstring_convert<wstr_convert_type, wchar_t> cvt;
+
+        const auto wide_input_str = cvt.from_bytes(i_str);
+
+        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
+        const auto& possible_a_vect = m_settings.text_lang == settings::Eng ? possible_a_eng : possible_a_rus;
+        const auto& ref_stats = m_settings.text_lang == settings::Eng ? eng_stats : rus_stats;
+
+        std::vector<program::hack_res> res_stats;
+
+        for(const auto a : possible_a_vect)
+        {
+            for(std::uint8_t b = 1; b <= lower_dict.size(); ++b)
+            {
+                const key curr_key(a, b);
+                hack_res curr_hack;
+                curr_hack.hacked_key = curr_key;
+
+                const auto decrypted_str = decrypt(wide_input_str, curr_key);
+                const auto stats = analyze_freqs(decrypted_str);
+
+                for (std::size_t i = 0; i < lower_dict.size(); ++i)
+                {
+                    auto ch_stat = stats.find(lower_dict[i]);
+                    if (ch_stat != std::end(stats))
+                        curr_hack.standard_deviation += (pow(ref_stats[i] - ch_stat->second, 2));
+                }
+
+                curr_hack.decrypted_str = cvt.to_bytes(decrypted_str);
+                curr_hack.standard_deviation = sqrtf(curr_hack.standard_deviation);
+                res_stats.emplace_back(std::move(curr_hack));
+            }
+        }
+
+        return res_stats;
+    };
 
 }

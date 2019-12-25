@@ -28,6 +28,9 @@ void change_settings(program& io_program)
                     static_cast<program::settings::text_lang_t>(utils_ns::io_helper::get_input(settings_set_lang));
             new_settings.non_dict_rule =
                     static_cast<program::settings::non_dict_rule_t >(utils_ns::io_helper::get_input(settings_set_non_dict_char_rule));
+            new_settings.upper_lower_rule =
+                    static_cast<program::settings::upper_lower_rule_t >(utils_ns::io_helper::get_input(settings_upper_lower_rule));
+
 
             io_program.set_settings(new_settings);
             std::cout << "Настройки сохранены" << std::endl;
@@ -53,8 +56,7 @@ int main() {
             {
                 const auto text = utils_ns::io_helper::get_wstring("Введите сообщение");
                 const auto res = aff_program.encrypt(text);
-                std::cout << "Ключ: " << std::to_string(res.second.a) << ", " <<
-                          std::to_string(res.second.b) << std::endl;
+                std::cout << res.second.to_string();
                 std::cout << "Выходной шифротекст: " << res.first << std::endl;
                 break;
             }
@@ -62,16 +64,31 @@ int main() {
             {
                 const auto text = utils_ns::io_helper::get_wstring("Введите шифротекст");
                 std::cout << "Ввод ключа формата f = ax + b" << std::endl;
-                program::key enc_key;
-                enc_key.a = utils_ns::io_helper::get_input<int>("Введите a");
-                enc_key.b = utils_ns::io_helper::get_input<int>("Введите b");
+                key enc_key(utils_ns::io_helper::get_input<int>("Введите a"),
+                        utils_ns::io_helper::get_input<int>("Введите b"));
                 std::cout << "Расшифрованное сообщение: " << aff_program.decrypt(text, enc_key)
                           << std::endl;
                 break;
             }
             case 4:
+            {
+                const auto text = utils_ns::io_helper::get_wstring("Введите шифротекст");
+                auto hack_stats = aff_program.hack(text);
+                std::sort(std::begin(hack_stats), std::end(hack_stats), [](const auto& i_lhs, const auto& i_rhs)
+                {
+                    return i_lhs.standard_deviation < i_rhs.standard_deviation;
+                });
+
+                for(std::size_t i = 0; i < 3; ++i)
+                {
+                    std::cout << std::to_string(i+1) << ". Ключ: " << hack_stats[i].hacked_key.to_string() <<
+                              "СКО: " << std::to_string(hack_stats[i].standard_deviation) <<
+                              " Исходная строка: " << std::endl;
+                    std::cout << hack_stats[i].decrypted_str << std::endl;
+                }
 
                 break;
+            }
             case 0:
                 return 0;
         }
