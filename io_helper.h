@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <functional>
 
 namespace utils_ns {
     class io_helper {

@@ -1,15 +1,12 @@
 #include <iostream>
 #include <sstream>
-
-
+#include <algorithm>
 
 #include "ui.h"
 #include "io_helper.h"
 #include "program.h"
 
 using namespace affine_ciphers_ns;
-
-
 
 void change_settings(program& io_program)
 {
