@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <iostream>
 
+#include "ui.h"
 
 namespace affine_ciphers_ns {
 
@@ -99,7 +100,7 @@ namespace affine_ciphers_ns {
     {
         const auto dict_size = get_dict_size();
 
-        std::cout << "Уравнение расшифрования: " << std::endl;
+        std::cout << decoding_eq << std::endl;
 
         const auto a_inv = find_inv(i_key.a);
         std::cout << "y = (" << std::to_string(a_inv) << "" <<

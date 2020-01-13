@@ -1,5 +1,5 @@
 //
-// Created by Р‘РѕРіРґР°РЅ Р’Р°СЃРёР»РµРЅРєРѕ on 21/12/2019.
+// Created by Богдан Василенко on 21/12/2019.
 //
 
 #ifndef AFFINE_CIPHERS_IO_HELPER_H
@@ -48,7 +48,7 @@ namespace utils_ns {
                 std::cin.ignore(1000, '\n');
 
 
-                std::cout << "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РІРІРѕРґ " << std::endl;
+                std::cout << "Неправильный ввод " << std::endl;
                 std::cout << i_ask << std::endl << '>';
                 std::cin >> answ;
             }

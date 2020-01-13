@@ -1,5 +1,5 @@
 //
-// Created by Ğ‘Ğ¾Ğ³Ğ´Ğ°Ğ½ Ğ’Ğ°ÑĞ¸Ğ»ĞµĞ½ĞºĞ¾ on 21/12/2019.
+// Created by Áîãäàí Âàñèëåíêî on 21/12/2019.
 //
 
 #include "program.h"
@@ -9,10 +9,39 @@
 #include <random>
 #include <sstream>
 
+#ifdef _WIN32
+#include<windows.h>
+#endif
 
+static std::wstring str_to_wstr(const std::string& i_str)
+{
+    std::wstring wide_str;
+#ifdef _WIN32
+    const int wchars_num = MultiByteToWideChar(CP_ACP, 0, i_str.c_str(), -1, NULL, 0);
+    wide_str.resize(wchars_num);
+    MultiByteToWideChar(CP_ACP, 0, i_str.c_str(), -1, &wide_str[0], wchars_num);
+#elif
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cvt;
+    wide_str = cvt.from_bytes(i_str);
+#endif
+    return wide_str;
+}
+
+static std::string wstr_to_str(const std::wstring& i_str)
+{
+    std::string str;
+#ifdef _WIN32
+    const int chars_num = WideCharToMultiByte(CP_ACP, 0, i_str.c_str(), (int)i_str.size(), NULL, 0, NULL, NULL);
+    str.resize(chars_num);
+    WideCharToMultiByte(CP_ACP, 0, &i_str[0], (int)i_str.size(), &str[0], chars_num, NULL, NULL);
+#elif
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cvt;
+    str = cvt.to_bytes(i_str);
+#endif
+    return str;
+}
 
 namespace affine_ciphers_ns {
-
 
     const std::wstring program::eng_dict = L"abcdefghijklmnopqrstuvwxyz";
     const std::wstring program::eng_upper_dict = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -24,8 +53,8 @@ namespace affine_ciphers_ns {
             };
     const std::vector<std::uint8_t> program::possible_a_eng = {1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25};
 
-    const std::wstring program::rus_dict = L"Ğ°Ğ±Ğ²Ğ³Ğ´ĞµÑ‘Ğ¶Ğ·Ğ¸Ğ¹ĞºĞ»Ğ¼Ğ½Ğ¾Ğ¿Ñ€ÑÑ‚ÑƒÑ„Ñ…Ñ†Ñ‡ÑˆÑ‰ÑŠÑ‹ÑŒÑÑÑ";
-    const std::wstring program::rus_upper_dict = L"ĞĞ‘Ğ’Ğ“Ğ”Ğ•ĞĞ–Ğ—Ğ˜Ğ™ĞšĞ›ĞœĞĞĞŸĞ Ğ¡Ğ¢Ğ£Ğ¤Ğ¥Ğ¦Ğ§Ğ¨Ğ©ĞªĞ«Ğ¬Ğ­Ğ®Ğ¯";
+    const std::wstring program::rus_dict = L"àáâãäå¸æçèéêëìíîïğñòóôõö÷øùúûüışÿ";
+    const std::wstring program::rus_upper_dict = L"ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß";
     const std::vector<double> program::rus_stats =
             { 0.07998, 0.01592, 0.04533, 0.01687, 0.02977, 0.08483, 0.00013, 0.0094,
               0.01641, 0.07367, 0.01208, 0.03486, 0.04343, 0.03203, 0.067, 0.10983,
@@ -67,11 +96,7 @@ namespace affine_ciphers_ns {
 
     std::string program::translate_msg(const std::string& i_str, translate_fn i_translate_fn) const
     {
-        using wstr_convert_type = std::codecvt_utf8<wchar_t>;
-        std::wstring_convert<wstr_convert_type, wchar_t> cvt;
-        const auto wide_str = cvt.from_bytes(i_str);
-
-        return cvt.to_bytes(translate_msg(wide_str, i_translate_fn));
+        return wstr_to_str(translate_msg(str_to_wstr(i_str), i_translate_fn));
     }
 
     std::wstring program::translate_msg(const std::wstring& i_str, translate_fn i_translate_fn) const
@@ -147,19 +172,19 @@ namespace affine_ciphers_ns {
     std::string program::settings::to_string() const
     {
         std::ostringstream str;
-        str << "Ğ¯Ğ·Ñ‹Ğº ÑˆĞ¸Ñ„Ñ€Ğ¾Ñ‚ĞµĞºÑÑ‚Ğ¾Ğ²: "
-            << (text_lang == text_lang_t::Eng ? "ĞĞ½Ğ³Ğ»Ğ¸Ğ¹ÑĞºĞ¸Ğ¹" : "Ğ ÑƒÑÑĞºĞ¸Ğ¹")
+        str << "ßçûê øèôğîòåêñòîâ: "
+            << (text_lang == text_lang_t::Eng ? "Àíãëèéñêèé" : "Ğóññêèé")
             << std::endl;
-        str << "Ğ¡Ğ¸Ğ¼Ğ²Ğ¾Ğ»Ñ‹, Ğ½Ğµ Ğ²Ñ…Ğ¾Ğ´ÑÑ‰Ğ¸Ğµ Ğ² Ğ°Ğ»Ñ„Ğ°Ğ²Ğ¸Ñ‚: "
-            << (non_dict_rule == non_dict_rule_t::Keep ? "Ğ¡Ğ¾Ñ…Ñ€Ğ°Ğ½ÑÑ‚ÑŒ" : "Ğ˜Ğ³Ğ½Ğ¾Ñ€Ğ¸Ñ€Ğ¾Ğ²Ğ°Ñ‚ÑŒ")
+        str << "Ñèìâîëû, íå âõîäÿùèå â àëôàâèò: "
+            << (non_dict_rule == non_dict_rule_t::Keep ? "Ñîõğàíÿòü" : "Èãíîğèğîâàòü")
             << std::endl;
-        str << "Ğ ĞµĞ³Ğ¸ÑÑ‚Ñ€ ÑˆĞ¸Ñ„Ñ€Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ: ";
+        str << "Ğåãèñòğ øèôğîâàíèÿ: ";
         if (upper_lower_rule == upper_lower_rule_t::Mix)
-            str << "Ğ¡Ğ¼ĞµÑˆĞ°Ğ½Ğ½Ñ‹Ğ¹";
+            str << "Ñìåøàííûé";
         else if(upper_lower_rule == upper_lower_rule_t::Only_lower)
-            str << "ĞĞ¸Ğ¶Ğ½Ğ¸Ğ¹";
+            str << "Íèæíèé";
         else
-            str << "Ğ’ĞµÑ€Ñ…Ğ½Ğ¸Ğ¹";
+            str << "Âåğõíèé";
 
         str << std::endl;
         return str.str();
@@ -168,7 +193,7 @@ namespace affine_ciphers_ns {
     std::string key::to_string() const
     {
         std::ostringstream str;
-        str << "ĞšĞ»ÑÑ‡ " << std::to_string(a) + ":" + std::to_string(b) << std::endl;
+        str << "Êëş÷ " << std::to_string(a) + ":" + std::to_string(b) << std::endl;
         return str.str();
     }
 
@@ -223,10 +248,7 @@ namespace affine_ciphers_ns {
 
     std::vector<program::hack_res> program::hack(const std::string& i_str) const
     {
-        using wstr_convert_type = std::codecvt_utf8<wchar_t>;
-        std::wstring_convert<wstr_convert_type, wchar_t> cvt;
-
-        const auto wide_input_str = cvt.from_bytes(i_str);
+        const auto wide_input_str = str_to_wstr(i_str);
 
         const auto& lower_dict = get_lower_dict();
         const auto& possible_a_vect = m_settings.text_lang == settings::Eng ? possible_a_eng : possible_a_rus;
@@ -252,7 +274,7 @@ namespace affine_ciphers_ns {
                         curr_hack.standard_deviation += (pow(ref_stats[i] - ch_stat->second, 2));
                 }
 
-                curr_hack.decrypted_str = cvt.to_bytes(decrypted_str);
+                curr_hack.decrypted_str = wstr_to_str(decrypted_str);
                 curr_hack.standard_deviation = sqrtf(curr_hack.standard_deviation);
                 res_stats.emplace_back(std::move(curr_hack));
             }

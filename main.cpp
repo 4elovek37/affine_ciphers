@@ -2,6 +2,10 @@
 #include <sstream>
 #include <algorithm>
 
+#ifdef _WIN32
+#include<windows.h>
+#endif
+
 #include "ui.h"
 #include "io_helper.h"
 #include "program.h"
@@ -10,7 +14,7 @@ using namespace affine_ciphers_ns;
 
 void change_settings(program& io_program)
 {
-    std::cout << "РўРµРєСѓС‰РёРµ РЅР°СЃС‚СЂРѕР№РєРё" << std::endl << io_program.get_settings().to_string();
+    std::cout << "Текущие настройки" << std::endl << io_program.get_settings().to_string();
 
     int ans = utils_ns::io_helper::get_input(settings_main_text);
 
@@ -30,12 +34,16 @@ void change_settings(program& io_program)
 
 
             io_program.set_settings(new_settings);
-            std::cout << "РќР°СЃС‚СЂРѕР№РєРё СЃРѕС…СЂР°РЅРµРЅС‹" << std::endl;
+            std::cout << "Настройки сохранены" << std::endl;
         }
     }
 }
 
 int main() {
+#ifdef _WIN32
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+#endif
     affine_ciphers_ns::program aff_program;
 
     std::cout << hello_text << std::endl;
@@ -51,25 +59,26 @@ int main() {
                 break;
             case 2:
             {
-                const auto text = utils_ns::io_helper::get_wstring("Р’РІРµРґРёС‚Рµ СЃРѕРѕР±С‰РµРЅРёРµ");
+                const auto text = utils_ns::io_helper::get_wstring("Введите сообщение");
                 const auto res = aff_program.encrypt(text);
                 std::cout << res.second.to_string();
-                std::cout << "Р’С‹С…РѕРґРЅРѕР№ С€РёС„СЂРѕС‚РµРєСЃС‚: " << res.first << std::endl;
+                std::cout << "Выходной шифротекст: " << res.first << std::endl;
                 break;
             }
             case 3:
             {
-                const auto text = utils_ns::io_helper::get_wstring("Р’РІРµРґРёС‚Рµ С€РёС„СЂРѕС‚РµРєСЃС‚");
-                std::cout << "Р’РІРѕРґ РєР»СЋС‡Р° С„РѕСЂРјР°С‚Р° f = ax + b" << std::endl;
-                key enc_key(utils_ns::io_helper::get_input<int>("Р’РІРµРґРёС‚Рµ a"),
-                        utils_ns::io_helper::get_input<int>("Р’РІРµРґРёС‚Рµ b"));
-                std::cout << "Р Р°СЃС€РёС„СЂРѕРІР°РЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ: " << aff_program.decrypt(text, enc_key)
+                const auto text = utils_ns::io_helper::get_wstring("Введите шифротекст");
+                std::cout << "Ввод ключа формата f = ax + b" << std::endl;
+                const auto a = utils_ns::io_helper::get_input<int>("Введите a");
+                const auto b = utils_ns::io_helper::get_input<int>("Введите b");
+                key enc_key(a, b);
+                std::cout << "Расшифрованное сообщение: " << aff_program.decrypt(text, enc_key)
                           << std::endl;
                 break;
             }
             case 4:
             {
-                const auto text = utils_ns::io_helper::get_wstring("Р’РІРµРґРёС‚Рµ С€РёС„СЂРѕС‚РµРєСЃС‚");
+                const auto text = utils_ns::io_helper::get_wstring("Введите шифротекст");
                 auto hack_stats = aff_program.hack(text);
                 std::sort(std::begin(hack_stats), std::end(hack_stats), [](const auto& i_lhs, const auto& i_rhs)
                 {
@@ -78,9 +87,9 @@ int main() {
 
                 for(std::size_t i = 0; i < 3; ++i)
                 {
-                    std::cout << std::to_string(i+1) << ". РљР»СЋС‡: " << hack_stats[i].hacked_key.to_string() <<
-                              "РЎРљРћ: " << std::to_string(hack_stats[i].standard_deviation) <<
-                              " РСЃС…РѕРґРЅР°СЏ СЃС‚СЂРѕРєР°: " << std::endl;
+                    std::cout << std::to_string(i+1) << ". Ключ: " << hack_stats[i].hacked_key.to_string() <<
+                              "СКО: " << std::to_string(hack_stats[i].standard_deviation) <<
+                              " Исходная строка: " << std::endl;
                     std::cout << hack_stats[i].decrypted_str << std::endl;
                 }
 
@@ -88,12 +97,13 @@ int main() {
             }
             case 5:
             {
-                const auto text = utils_ns::io_helper::get_wstring("Р’РІРµРґРёС‚Рµ СЃРѕРѕР±С‰РµРЅРёРµ");
-                key enc_key(utils_ns::io_helper::get_input<int>("Р’РІРµРґРёС‚Рµ a"),
-                            utils_ns::io_helper::get_input<int>("Р’РІРµРґРёС‚Рµ b"));
+                const auto text = utils_ns::io_helper::get_wstring("Введите сообщение");
+                const auto a = utils_ns::io_helper::get_input<int>("Введите a");
+                const auto b = utils_ns::io_helper::get_input<int>("Введите b");
+                key enc_key(a, b);
 
                 const auto res = aff_program.encrypt_by_key(text, enc_key);
-                std::cout << "Р’С‹С…РѕРґРЅРѕР№ С€РёС„СЂРѕС‚РµРєСЃС‚: " << res.first << std::endl;
+                std::cout << "Выходной шифротекст: " << res.first << std::endl;
 
                 break;
             }
