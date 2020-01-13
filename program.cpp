@@ -34,6 +34,36 @@ namespace affine_ciphers_ns {
             };
     const std::vector<std::uint8_t> program::possible_a_rus = {1, 2, 4, 5, 7, 8, 10, 13, 14, 16, 17, 19, 20, 23, 25, 26, 28, 29, 31, 32};
 
+    std::size_t program::get_dict_size() const
+    {
+        return (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
+    }
+
+    const std::wstring& program::get_lower_dict() const
+    {
+        return m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
+    }
+
+    const std::wstring& program::get_upper_dict() const
+    {
+        return m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
+    }
+
+    std::uint8_t program::find_inv(std::uint8_t i_val) const
+    {
+        const auto dict_size = get_dict_size();
+        std::uint8_t inv = i_val % dict_size;
+        for(std::uint8_t x = 1; x < dict_size; ++x)
+        {
+            if((inv * x) % dict_size == 1)
+            {
+                inv = x;
+                break;
+            }
+        }
+
+        return inv;
+    }
 
     std::string program::translate_msg(const std::string& i_str, translate_fn i_translate_fn) const
     {
@@ -48,8 +78,8 @@ namespace affine_ciphers_ns {
     {
         std::unordered_map<wchar_t, wchar_t> translation_table;
         std::wstring res_str;
-        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
-        const auto& upper_dict = m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
+        const auto& lower_dict = get_lower_dict();
+        const auto& upper_dict = get_upper_dict();
 
         for(const auto ch : i_str) {
             const auto trans_it = translation_table.find(ch);
@@ -86,8 +116,8 @@ namespace affine_ciphers_ns {
 
     std::pair<const std::wstring&, std::size_t> program::find_ch_in_dict(wchar_t i_ch) const
     {
-        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
-        const auto& upper_dict = m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
+        const auto& lower_dict = get_lower_dict();
+        const auto& upper_dict = get_upper_dict();
 
         const auto pos = lower_dict.find(i_ch);
         if (pos != std::wstring::npos)
@@ -167,8 +197,8 @@ namespace affine_ciphers_ns {
             }
         }
 
-        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
-        const auto& upper_dict = m_settings.text_lang == settings::Eng ? eng_upper_dict : rus_upper_dict;
+        const auto& lower_dict = get_lower_dict();
+        const auto& upper_dict = get_upper_dict();
 
         for(std::size_t i = 0; i < lower_dict.size(); ++i)
         {
@@ -198,7 +228,7 @@ namespace affine_ciphers_ns {
 
         const auto wide_input_str = cvt.from_bytes(i_str);
 
-        const auto& lower_dict = m_settings.text_lang == settings::Eng ? eng_dict : rus_dict;
+        const auto& lower_dict = get_lower_dict();
         const auto& possible_a_vect = m_settings.text_lang == settings::Eng ? possible_a_eng : possible_a_rus;
         const auto& ref_stats = m_settings.text_lang == settings::Eng ? eng_stats : rus_stats;
 

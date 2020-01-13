@@ -89,6 +89,17 @@ int main() {
 
                 break;
             }
+            case 5:
+            {
+                const auto text = utils_ns::io_helper::get_wstring("Введите сообщение");
+                key enc_key(utils_ns::io_helper::get_input<int>("Введите a"),
+                            utils_ns::io_helper::get_input<int>("Введите b"));
+
+                const auto res = aff_program.encrypt_by_key(text, enc_key);
+                std::cout << "Выходной шифротекст: " << res.first << std::endl;
+
+                break;
+            }
             case 0:
                 return 0;
         }

@@ -11,6 +11,7 @@
 #include <vector>
 #include <functional>
 #include <unordered_map>
+#include <iostream>
 
 
 namespace affine_ciphers_ns {
@@ -52,6 +53,9 @@ namespace affine_ciphers_ns {
         std::pair<STR_T, key> encrypt(const STR_T& i_str) const;
 
         template<typename STR_T>
+        std::pair<STR_T, key> encrypt_by_key(const STR_T& i_str, const key& i_key) const;
+
+        template<typename STR_T>
         STR_T decrypt(const STR_T& i_str, key i_key) const;
 
         std::vector<hack_res> hack(const std::string& i_str) const;
@@ -70,6 +74,12 @@ namespace affine_ciphers_ns {
 
         std::unordered_map<wchar_t, double> analyze_freqs(const std::wstring& i_str) const;
 
+        std::uint8_t find_inv(std::uint8_t i_val) const;
+
+        std::size_t get_dict_size() const;
+        const std::wstring& get_lower_dict() const;
+        const std::wstring& get_upper_dict() const;
+
     private:
         settings m_settings;
 
@@ -85,32 +95,47 @@ namespace affine_ciphers_ns {
     };
 
     template<typename STR_T>
-    std::pair<STR_T, key> program::encrypt(const STR_T& i_str) const
+    inline std::pair<STR_T, key> program::encrypt_by_key(const STR_T& i_str, const key& i_key) const
+    {
+        const auto dict_size = get_dict_size();
+
+        std::cout << "Уравнение расшифрования: " << std::endl;
+
+        const auto a_inv = find_inv(i_key.a);
+        std::cout << "y = (" << std::to_string(a_inv) << "" <<
+                  "x" << " + " << std::to_string((a_inv * (dict_size - i_key.b)) % dict_size ) << ") % " <<
+                  std::to_string(dict_size) << std::endl;
+
+
+        auto enc_fn = [&i_key, dict_size](std::size_t i_curr_pos)
+        {
+            return (i_curr_pos * i_key.a + i_key.b) % dict_size;
+        };
+
+        return { translate_msg(i_str, enc_fn), i_key };
+    }
+
+    template<typename STR_T>
+    inline std::pair<STR_T, key> program::encrypt(const STR_T& i_str) const
     {
         const auto enc_key = gen_key();
 
-        const std::size_t dict_size = (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
+        const auto dict_size = get_dict_size();
         auto enc_fn = [&enc_key, dict_size](std::size_t i_curr_pos)
         {
             return (i_curr_pos * enc_key.a + enc_key.b) % dict_size;
         };
 
+
+
         return { translate_msg(i_str, enc_fn), enc_key };
     };
 
     template<typename STR_T>
-    STR_T program::decrypt(const STR_T& i_str, key i_key) const
+    inline STR_T program::decrypt(const STR_T& i_str, key i_key) const
     {
-        const std::size_t dict_size = (m_settings.text_lang == settings::Eng ? eng_dict.size() : rus_dict.size());
-        std::uint8_t a_inv = i_key.a % dict_size;
-        for(std::uint8_t x = 1; x < dict_size; ++x)
-        {
-            if((a_inv * x) % dict_size == 1)
-            {
-                a_inv = x;
-                break;
-            }
-        }
+        const auto dict_size = get_dict_size();
+        const auto a_inv = find_inv(i_key.a);
 
         auto dec_fn = [&i_key, a_inv, dict_size](std::size_t i_curr_pos)
         {
