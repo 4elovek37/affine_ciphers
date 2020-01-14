@@ -107,7 +107,6 @@ namespace affine_ciphers_ns {
                   "x" << " + " << std::to_string((a_inv * (dict_size - i_key.b)) % dict_size ) << ") % " <<
                   std::to_string(dict_size) << std::endl;
 
-
         auto enc_fn = [&i_key, dict_size](std::size_t i_curr_pos)
         {
             return (i_curr_pos * i_key.a + i_key.b) % dict_size;
@@ -119,17 +118,7 @@ namespace affine_ciphers_ns {
     template<typename STR_T>
     inline std::pair<STR_T, key> program::encrypt(const STR_T& i_str) const
     {
-        const auto enc_key = gen_key();
-
-        const auto dict_size = get_dict_size();
-        auto enc_fn = [&enc_key, dict_size](std::size_t i_curr_pos)
-        {
-            return (i_curr_pos * enc_key.a + enc_key.b) % dict_size;
-        };
-
-
-
-        return { translate_msg(i_str, enc_fn), enc_key };
+        return encrypt_by_key(i_str, gen_key());
     };
 
     template<typename STR_T>
