@@ -43,8 +43,8 @@ static std::string wstr_to_str(const std::wstring& i_str)
 
 namespace affine_ciphers_ns {
 
-    const std::wstring program::eng_dict = L"abcdefghijklmnopqrstuvwxyz";
-    const std::wstring program::eng_upper_dict = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const std::wstring program::eng_dict = ENG_DICT;
+    const std::wstring program::eng_upper_dict = ENG_UPPER_DICT;
     const std::vector<double> program::eng_stats =
             { 0.08167, 0.01492, 0.02202, 0.04253, 0.012702, 0.02228, 0.02015, 0.06094,
               0.06966, 0.00153, 0.01292, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929,
@@ -53,8 +53,8 @@ namespace affine_ciphers_ns {
             };
     const std::vector<std::uint8_t> program::possible_a_eng = {1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25};
 
-    const std::wstring program::rus_dict = L"абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
-    const std::wstring program::rus_upper_dict = L"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+    const std::wstring program::rus_dict = RUS_DICT;
+    const std::wstring program::rus_upper_dict = RUS_UPPER_DICT;
     const std::vector<double> program::rus_stats =
             { 0.07998, 0.01592, 0.04533, 0.01687, 0.02977, 0.08483, 0.00013, 0.0094,
               0.01641, 0.07367, 0.01208, 0.03486, 0.04343, 0.03203, 0.067, 0.10983,
@@ -172,19 +172,19 @@ namespace affine_ciphers_ns {
     std::string program::settings::to_string() const
     {
         std::ostringstream str;
-        str << "Язык шифротекстов: "
-            << (text_lang == text_lang_t::Eng ? "Английский" : "Русский")
+        str << SETTINGS_OUTP_LANG
+            << (text_lang == text_lang_t::Eng ? SETTINGS_OUTP_LANG_ENG : SETTINGS_OUTP_LANG_RUS)
             << std::endl;
-        str << "Символы, не входящие в алфавит: "
-            << (non_dict_rule == non_dict_rule_t::Keep ? "Сохранять" : "Игнорировать")
+        str << SETTINGS_OUTP_NON_DICT_RULE
+            << (non_dict_rule == non_dict_rule_t::Keep ? SETTINGS_OUTP_NON_DICT_RULE_KEEP : SETTINGS_OUTP_NON_DICT_RULE_IGNORE)
             << std::endl;
-        str << "Регистр шифрования: ";
+        str << SETTINGS_OUTP_UPPER_LOWER_RULE;
         if (upper_lower_rule == upper_lower_rule_t::Mix)
-            str << "Смешанный";
+            str << SETTINGS_OUTP_UPPER_LOWER_RULE_MIX;
         else if(upper_lower_rule == upper_lower_rule_t::Only_lower)
-            str << "Нижний";
+            str << SETTINGS_OUTP_UPPER_LOWER_RULE_LOWER;
         else
-            str << "Верхний";
+            str << SETTINGS_OUTP_UPPER_LOWER_RULE_UPPER;
 
         str << std::endl;
         return str.str();
@@ -193,7 +193,7 @@ namespace affine_ciphers_ns {
     std::string key::to_string() const
     {
         std::ostringstream str;
-        str << "Ключ " << std::to_string(a) + ":" + std::to_string(b) << std::endl;
+        str << OUTP_KEY << std::to_string(a) + ":" + std::to_string(b) << std::endl;
         return str.str();
     }
 

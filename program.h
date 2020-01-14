@@ -100,7 +100,7 @@ namespace affine_ciphers_ns {
     {
         const auto dict_size = get_dict_size();
 
-        std::cout << decoding_eq << std::endl;
+        std::cout << DECODING_EQ << std::endl;
 
         const auto a_inv = find_inv(i_key.a);
         std::cout << "y = (" << std::to_string(a_inv) << "" <<

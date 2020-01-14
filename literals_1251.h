@@ -11,8 +11,18 @@
 #define SETTINGS_SAVED "Настройки сохранены"
 #define SETTINGS_MAIN "Выберите опцию (1 - Сменить настройки, 0 - Выход)"
 #define SETTINGS_SET_LANG "Выберите язык шифротекстов (1 - Английский, 2 - Русский)"
-#define SETTINGS_NON_DICT_RULE "Выберите тип обработки символов, не входящих в алфавит: (1 - Игнорировать, 2 - Сохранать)"
+#define SETTINGS_NON_DICT_RULE "Выберите тип обработки символов, не входящих в алфавит: (1 - Игнорировать, 2 - Сохранять)"
 #define SETTINGS_UPPER_LOWER_RULE "Выберите регистр шифрования: (1 - Смешанный, 2 - Верхний, 3 - Нижний)"
+#define SETTINGS_OUTP_LANG "Язык шифротекстов: "
+#define SETTINGS_OUTP_LANG_ENG "Английский"
+#define SETTINGS_OUTP_LANG_RUS "Русский"
+#define SETTINGS_OUTP_NON_DICT_RULE "Символы, не входящие в алфавит: "
+#define SETTINGS_OUTP_NON_DICT_RULE_KEEP "Сохранять"
+#define SETTINGS_OUTP_NON_DICT_RULE_IGNORE "Игнорировать"
+#define SETTINGS_OUTP_UPPER_LOWER_RULE "Регистр шифрования: "
+#define SETTINGS_OUTP_UPPER_LOWER_RULE_MIX "Смешанный"
+#define SETTINGS_OUTP_UPPER_LOWER_RULE_LOWER "Нижний"
+#define SETTINGS_OUTP_UPPER_LOWER_RULE_UPPER "Верхний"
 
 // Encr/decr
 #define ENTER_MSG "Введите сообщение"
@@ -27,5 +37,11 @@
 
 // I/O
 #define INCORRECT_INPUT "Неправильный ввод "
+
+// Dictionaries
+#define ENG_DICT L"abcdefghijklmnopqrstuvwxyz"
+#define ENG_UPPER_DICT L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define RUS_DICT L"абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+#define RUS_UPPER_DICT L"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
 
 #endif

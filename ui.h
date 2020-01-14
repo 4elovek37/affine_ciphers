@@ -13,7 +13,6 @@ namespace affine_ciphers_ns {
     using int_ansv_t = const utils_ns::io_helper::ask_and_options<int>;
 
     static const std::string hello_text = HELLO;
-    static const std::string decoding_eq = DECODING_EQ;
     int_ansv_t main_menu_text = {
             MAIN_MENU,
             {0, 1, 2, 3, 4, 5}
