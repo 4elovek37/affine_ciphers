@@ -1,9 +1,11 @@
 //
-// Created by Богдан Василенко on 21/12/2019.
+// Created by Р‘РѕРіРґР°РЅ Р’Р°СЃРёР»РµРЅРєРѕ on 21/12/2019.
 //
 
 #ifndef AFFINE_CIPHERS_IO_HELPER_H
 #define AFFINE_CIPHERS_IO_HELPER_H
+
+#include "literals.h"
 
 #include <string>
 #include <vector>
@@ -48,7 +50,7 @@ namespace utils_ns {
                 std::cin.ignore(1000, '\n');
 
 
-                std::cout << "Неправильный ввод " << std::endl;
+                std::cout << INCORRECT_INPUT << std::endl;
                 std::cout << i_ask << std::endl << '>';
                 std::cin >> answ;
             }
@@ -57,7 +59,7 @@ namespace utils_ns {
             return answ;
         }
 
-        static std::string get_wstring(const std::string &i_ask) {
+        static std::string get_string(const std::string &i_ask) {
             std::cout << i_ask << std::endl << "> ";
             std::cin.ignore(1);
             std::string answ;
