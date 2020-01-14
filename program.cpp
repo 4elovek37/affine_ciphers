@@ -160,7 +160,7 @@ namespace affine_ciphers_ns {
         std::uniform_int_distribution<std::size_t> a_dist(0
                 , (m_settings.text_lang == settings::Eng ? possible_a_eng.size() : possible_a_rus.size()));
         std::uniform_int_distribution<std::uint32_t > b_dist(1
-                , (m_settings.text_lang == settings::Eng ? eng_dict.size() + 1 : rus_dict.size() + 1));
+                , get_dict_size() + 1);
 
         const auto a_idx = a_dist(mt);
         o_key.a = (m_settings.text_lang == settings::Eng ? possible_a_eng[a_idx] : possible_a_rus[a_idx]);
